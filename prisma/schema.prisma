@@ -1,0 +1,94 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String    @id @default(uuid())
+  username          String    @unique
+  email             String    @unique
+  passwordHash      String
+  profilePictureHd  String?
+  profilePictureTn  String?
+  credits           Decimal   @default(0) @db.Decimal(10, 2)
+  status           Int       @default(1)
+  lastLogin         DateTime?
+  registrationDate  DateTime  @default(now())
+  
+  posts            Post[]
+  comments         Comment[]
+  sentTransactions     Transaction[] @relation("FromUser")
+  receivedTransactions Transaction[] @relation("ToUser")
+  preferences      UserPreference[]
+
+  @@index([email])
+  @@index([username])
+}
+
+model Post {
+  id              String    @id @default(uuid())
+  userId          String
+  content         String
+  timestamp       DateTime  @default(now())
+  status          Int       @default(1)
+  originalityScore Decimal?  @db.Decimal(5, 2)
+  viewCost        Decimal   @default(1.00) @db.Decimal(10, 2)
+  commentCost     Decimal   @default(0.50) @db.Decimal(10, 2)
+  
+  user            User      @relation(fields: [userId], references: [id])
+  comments        Comment[]
+
+  @@index([timestamp])
+  @@index([userId])
+}
+
+model Comment {
+  id              String    @id @default(uuid())
+  postId          String
+  userId          String
+  parentCommentId String?
+  content         String
+  timestamp       DateTime  @default(now())
+  level           Int
+  status          Int       @default(1)
+  
+  post            Post      @relation(fields: [postId], references: [id])
+  user            User      @relation(fields: [userId], references: [id])
+  parentComment   Comment?  @relation("CommentToComment", fields: [parentCommentId], references: [id])
+  childComments   Comment[] @relation("CommentToComment")
+
+  @@index([postId, parentCommentId, level])
+}
+
+model Transaction {
+  id          String    @id @default(uuid())
+  fromUserId  String
+  toUserId    String
+  amount      Decimal   @db.Decimal(10, 2)
+  type        String
+  referenceId String
+  timestamp   DateTime  @default(now())
+  status      Int       @default(1)
+  
+  fromUser    User      @relation("FromUser", fields: [fromUserId], references: [id])
+  toUser      User      @relation("ToUser", fields: [toUserId], references: [id])
+
+  @@index([fromUserId, toUserId])
+  @@index([timestamp])
+}
+
+model UserPreference {
+  id          String    @id @default(uuid())
+  userId      String
+  questionId  Int
+  answer      String
+  type        String
+  
+  user        User      @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}

@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-rgb: 247, 247, 242;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: rgb(var(--background-rgb));
+}
+
+@layer components {
+  .vintage-button {
+    @apply bg-postal-600 text-postal-50 px-6 py-3 rounded-sm 
+           shadow-md hover:bg-postal-700 transition-colors 
+           font-serif tracking-wide;
+  }
+
+  .vintage-input {
+    @apply border-postal-300 rounded-sm focus:ring-postal-500 
+           focus:border-postal-500 block w-full shadow-sm;
+  }
+
+  .vintage-card {
+    @apply bg-white border border-postal-200 rounded-sm shadow-md p-6;
+  }
+}
